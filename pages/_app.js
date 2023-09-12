@@ -1,5 +1,15 @@
-import '@/styles/globals.css'
+import '../styles/globals.css'
+import Login from './login'
+import Dashboard from './dashboard'
+import { AuthProvider } from '../hooks/useAuth';
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />
+function MyApp({ Component, pageProps }) {
+  return (
+    <AuthProvider>
+      <Component {...pageProps} />
+      <div id='recaptcha-container'></div>
+    </AuthProvider>
+  );
 }
+
+export default MyApp
