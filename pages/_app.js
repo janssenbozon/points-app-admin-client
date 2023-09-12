@@ -7,7 +7,6 @@ function MyApp({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Component {...pageProps} />
-      <div id='recaptcha-container'></div>
     </AuthProvider>
   );
 }
