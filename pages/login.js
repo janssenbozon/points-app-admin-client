@@ -35,11 +35,9 @@ export default function Login() {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin></link>
                 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet"></link>
             </Head>
-            <main className='flex min-h-screen flex-col text-center justify-center p-24'>
-                    <>
-                        <div>
+            <main className='flex min-h-screen flex-col justify-center items-center space-y-3 p-24'>
                             <h1 className="text-5xl font-bold">Secretary Portal</h1>
-                            {incorrectEmail === true ? <h2 className='text-md font-bold font-lato text-center text-red-500'>Incorrect username or password.</h2> : <p class="py-3">Please enter your username and password to login.</p>}
+                            {incorrectEmail === true ? <h2 className='text-md font-bold font-lato text-center text-red-500'>Incorrect username or password.</h2> : <p>Please enter your username and password to login.</p>}
                             <input
                                 type="email"
                                 value={email}
@@ -55,14 +53,12 @@ export default function Login() {
                                 onChange={e => setPassword(e.target.value)}
                             />
                             {loading === true ? <div class="loading loading-lg"></div> :
-                                <div class="py-3">
+                                <div>
                                     <button
                                         className="btn btn-primary"
                                         onClick={(e) => handleInput()}>Submit</button>
                                 </div>
                             }
-                        </div>
-                    </>
             </main>
         </div>
     )

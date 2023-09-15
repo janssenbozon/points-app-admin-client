@@ -19,7 +19,7 @@ export default function Dashboard() {
     }
 
     function handleEvents() {
-        router.push('/events');
+        router.push('/eventPage');
     }
 
     function handleExport() {
@@ -38,29 +38,19 @@ export default function Dashboard() {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin></link>
                 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet"></link>
             </Head>
-            <main className="flex min-h-screen flex-col items-center justify-center content p-24">
-            <div class="max-w-md">
+            <main className="flex min-h-screen flex-col items-center justify-center p-24">
                 <h1 class="text-5xl font-bold">Dashboard</h1>
                 <p class="py-3">What would you like to do?</p>
                 <div class="flex flex-col space-y-3">
                     <button
                         class="btn btn-neutral"
-                        onClick={() => handleSearch()}
-                    >Search for a member</button>
-                    <button
-                        class="btn btn-neutral"
                         onClick={() => handleEvents()}
-                    >View / edit events</button>
-                    <button
-                        class="btn btn-neutral"
-                        onClick={() => handleExport()}
-                    >Export data</button>
+                    >View events</button>
                     <button
                         class="btn btn-error"
                         onClick={() => handleSignout()}
                     >Log out</button>
                 </div>
-            </div>
             </main>
         </div>
     )

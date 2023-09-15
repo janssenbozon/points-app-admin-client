@@ -8,7 +8,9 @@ export default function Home() {
 
   if(loading) {
     return (
-      <div className="loading loading-lg" />
+      <div class='justify-center align-middle'>
+        <div class="loading loading-lg" />
+      </div>
     )
   }
 

@@ -37,7 +37,7 @@ function useProvideAuth() {
     const signInWithEmail = (email, password) => {
         return new Promise((resolve, reject) => {
             console.log("signing in " + email + " " + password);
-            signInWithEmail(auth, email, password)
+            signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     // Signed in 
                     console.log("logged in")
@@ -51,6 +51,18 @@ function useProvideAuth() {
                 });
         });
     }
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUser(user)
+            } else {
+                setUser(false)
+            }
+            setLoading(false)
+        })
+        return () => unsubscribe()
+    }, [])
 
     return {
         user,

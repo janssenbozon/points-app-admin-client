@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "points-app-admin",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
