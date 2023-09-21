@@ -10,7 +10,7 @@ export default function CreateEvent() {
     const router = useRouter();
     const [eventName, setEventName] = useState("");
     const [category, setCategory] = useState("");
-    const [points, setPoints] = useState("");
+    const [points, setPoints] = useState(null);
     const [start, setStart] = useState(new Date());
     const [end, setEnd] = useState(new Date());
     const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function CreateEvent() {
                 <div class="flex justify-center py-3">
                     <button
                         class="btn btn-primary"
-                        onClick={() => handleClick()}>Create Another Event</button>
+                        onClick={() => router.push('/createEvent')}>Create Another Event</button>
                 </div>
                 <div class="flex justify-center py-3">
                     <button
@@ -122,7 +122,7 @@ export default function CreateEvent() {
                     <div class="flex flex-col space-y-2 w-80">
                         <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
                         <input type="text" placeholder="Category" class="input input-bordered input-primary w-full max-w-xs" value={category} onChange={e => setCategory(e.target.value)} />
-                        <input type="text" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(e.target.value)} />
+                        <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
                         <h1 class="text-xl font-medium">Start Date and Time</h1>
                         <div class="flex flex-row space-x-2">
                             <input type="datetime-local" class="input input-bordered input-primary w-full" value={start} onChange={(e) => setStart(e.target.value)} />
