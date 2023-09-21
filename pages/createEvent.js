@@ -37,15 +37,23 @@ export default function CreateEvent() {
                 })
                 .catch((error) => {
                     reject(error);
+                    setError("Error creating event. Please try again.");
                 });
         });
     }
 
     function handleClick() {
-        console.log("handleClick()")
-        console.log(auth.currentUser.uid);
+
+        // check if all fields are filled out
+        if (eventName == "" || category == "" || points == null || start == null || end == null) {
+            setError("Please fill out all fields.");
+            return;
+        }
+
         return new Promise(async (resolve, reject) => {
             setLoading(true);
+            setError(false);
+
             const eventCode = await generateEventCode();
             setEventCode(eventCode);
             set(ref(database, 'events/' + eventCode), {
@@ -56,19 +64,20 @@ export default function CreateEvent() {
                 start: start,
                 code: eventCode,
             }).then(() => {
+                console.log("handleClick()");
                 setLoading(false);
                 setSuccess(true);
                 setEventCard(false);
                 resolve(true);
             }).catch((error) => {
                 setLoading(false);
-                setError(true);
+                setError("Error creating event. Please try again.");
                 setEventCard(false);
                 reject(error);
             });
         });
     }
-    
+
     // return success card (daisyui compoenent) with button to return to homepage or create a new event 
     function successCard() {
         return (
@@ -87,7 +96,7 @@ export default function CreateEvent() {
                 <div class="flex justify-center py-3">
                     <button
                         class="btn btn-primary"
-                        onClick={() => router.push('/')}>Return to Homepage</button>    
+                        onClick={() => router.push('/')}>Return to Homepage</button>
                 </div>
             </div>
         )
@@ -102,55 +111,55 @@ export default function CreateEvent() {
                 <div class="flex justify-center py-3">
                     <button
                         class="btn btn-primary"
-                        onClick={() => handleClick()}>Create Another Event</button>
+                        onClick={() => router.push('/createEvent')}>Create Another Event</button>
                 </div>
                 <div class="flex justify-center py-3">
                     <button
                         class="btn btn-primary"
-                        onClick={() => router.push('/dashboard')}>Return to Homepage</button>    
+                        onClick={() => router.push('/dashboard')}>Return to Homepage</button>
                 </div>
             </div>
         )
     }
-            
+
 
     function eventInput() {
         return (
             <div class="justify-center">
-                    <h1 class="text-5xl font-bold">Create an event.</h1>
-                    <p class="pt-2 pb-4 text-center">All fields are required.</p>
-                    <div class="flex flex-col space-y-2 w-80">
-                        <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
-                        <input type="text" placeholder="Category" class="input input-bordered input-primary w-full max-w-xs" value={category} onChange={e => setCategory(e.target.value)} />
-                        <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
-                        <h1 class="text-xl font-medium">Start Date and Time</h1>
-                        <div class="flex flex-row space-x-2">
-                            <input type="datetime-local" class="input input-bordered input-primary w-full" value={start} onChange={(e) => setStart(e.target.value)} />
-                        </div>
-                        <h1 class="text-xl font-medium">End Date and Time</h1>
-                        <div class="flex flex-row space-x-2">
-                            <input type="datetime-local" class="input input-bordered input-primary w-full" value={end} onChange={(e) => setEnd(e.target.value)} />
-                        </div>
-                        <div class="flex justify-center py-3 space-x-3">
-                            <button
-                                class="btn btn-primary"
-                                onClick={() => router.push('/dashboard')}>Back to dashboard</button>
-                                <button
-                                class="btn btn-primary"
-                                onClick={() => handleClick()}>Create</button>
-                        </div>
+                <h1 class="text-5xl font-bold">Create an event.</h1>
+                <p class="pt-2 pb-4 text-center">All fields are required.</p>
+                <div class="flex flex-col space-y-2 w-80">
+                    <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
+                    <input type="text" placeholder="Category" class="input input-bordered input-primary w-full max-w-xs" value={category} onChange={e => setCategory(e.target.value)} />
+                    <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
+                    <h1 class="text-xl font-medium">Start Date and Time</h1>
+                    <div class="flex flex-row space-x-2">
+                        <input type="datetime-local" class="input input-bordered input-primary w-full" value={start} onChange={(e) => setStart(e.target.value)} />
+                    </div>
+                    <h1 class="text-xl font-medium">End Date and Time</h1>
+                    <div class="flex flex-row space-x-2">
+                        <input type="datetime-local" class="input input-bordered input-primary w-full" value={end} onChange={(e) => setEnd(e.target.value)} />
+                    </div>
+                    { error ? <div class="text-sm self-center text-red-400">{error}</div> : null }
+                    <div class="flex justify-center py-3 space-x-3">
+                        <button
+                            class="btn btn-primary"
+                            onClick={() => router.push('/dashboard')}>Back to dashboard</button>
+                        <button
+                            class="btn btn-primary"
+                            onClick={() => handleClick()}>Create</button>
                     </div>
                 </div>
+            </div>
         )
     }
-
-
+    
+    
     return (
         <main className="flex min-h-screen flex-col items-center justify-center p-24">
-            { loading ? <div class="loading loading-lg"></div> : null}
-            { eventCard ? eventInput() : null }
-            { error ? errorCard() : null }
-            { success ? successCard() : null }
+            {loading ? <div class="loading loading-lg"></div> : null}
+            {eventCard ? eventInput() : null}
+            {success ? successCard() : null}
         </main>
     )
 }

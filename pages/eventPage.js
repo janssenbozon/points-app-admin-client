@@ -96,6 +96,7 @@ export default function EventPage() {
     }
 
     const openModal = (event) => {
+        console.log("Model pressed");
         setEventToDelete(event); // Set the event data when opening the modal
         document.getElementById('my_modal_1').showModal();
     }
@@ -110,7 +111,7 @@ export default function EventPage() {
             <dialog id="my_modal_1" className="modal">
                 <div className="modal-box">
                     <h3 className="font-bold text-lg">Delete Event</h3>
-                    <p className="py-4">Are you sure you want to delete {eventToDelete?.name}?</p>
+                    <p className="py-4">Are you sure you want to delete {eventToDelete?.name}? This will not delete the event for people who have already claimed the point.</p>
                     <div className="modal-action">
                         <form method="dialog">
                             {/* if there is a button in form, it will close the modal */}
