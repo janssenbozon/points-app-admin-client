@@ -1,30 +1,18 @@
 import Head from 'next/head'
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 
-export default function Dashboard() {
+export default function SearchUser() {
 
     const auth = useAuth();
     const router = useRouter();
-    const handleSignout = async () => {
-        if (await auth.signout()) {
-            router.push('/login');
-        } else {
-            console.log("error signing out");
-        }
-    }
+    const [input, setInput] = useState();
 
     function handleSearch() {
-        router.push('/searchUser');
+        console.log(input);
     }
 
-    function handleEvents() {
-        router.push('/eventPage');
-    }
-
-    function handleExport() {
-        router.push('/export');
-    }
 
     // TODO: Break down into components
     return (
@@ -39,21 +27,18 @@ export default function Dashboard() {
                 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet"></link>
             </Head>
             <main className="flex min-h-screen flex-col items-center justify-center p-24">
-                <h1 class="text-5xl font-bold">Dashboard</h1>
-                <p class="py-3">What would you like to do?</p>
+                <h1 class="text-5xl font-bold">Search For a User</h1>
+                <p class="py-3">Look up a user by name or phone number.</p>
                 <div class="flex flex-col space-y-3">
-                    <button
-                        class="btn btn-neutral"
-                        onClick={() => handleEvents()}
-                    >View events</button>
+                    <input type="text" placeholder="Enter name or number" className="input input-bordered w-full max-w-xs" value={input} onChange={() => setInput(e.target.value)}/>
                     <button
                         class="btn btn-neutral"
                         onClick={() => handleSearch()}
-                    >Search for a user</button>
+                    >Search</button>
                     <button
-                        class="btn btn-error"
-                        onClick={() => handleSignout()}
-                    >Log out</button>
+                        class="btn btn-neutral"
+                        onClick={() => router.push('/dashboard')}
+                    >Back</button>
                 </div>
             </main>
         </div>

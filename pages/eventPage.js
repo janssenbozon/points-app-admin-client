@@ -2,7 +2,8 @@ import { database } from "@/firebase/config";
 import { ref, get, set } from "firebase/database";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { TrashIcon } from "@heroicons/react/20/solid";
+import { TrashIcon, PencilSquareIcon } from "@heroicons/react/20/solid";
+import Link from "next/link";
 
 export default function EventPage() {
 
@@ -85,6 +86,16 @@ export default function EventPage() {
                                         <button onClick={() => openModal(event)}>
                                             <TrashIcon className="h-4 w-4 mx-2 my-3" />
                                         </button>
+                                        <button onClick={() => {
+                                            router.push({
+                                                pathname: '/editEvent',
+                                                query: {
+                                                    eventCode: event.code,
+                                                }
+                                          }, '/editEvent');
+                                        }}>
+                                            <PencilSquareIcon className="h-4 w-4 mx-2 my-3" />
+                                        </button>
                                     </tr>
                                 )
                             })}
@@ -130,7 +141,7 @@ export default function EventPage() {
     return (
         <main>
             <div class="flex min-h-screen flex-col items-center justify-center space-y-3">
-                {loading ? <div class="loading loading-lg" /> : <EventsList />}
+                {loading ? <span class="loading loading-spinner loading-lg"/> : <EventsList />}
                 <PopUp />
                 <div class="flex justify-center space-x-3">
                     <button

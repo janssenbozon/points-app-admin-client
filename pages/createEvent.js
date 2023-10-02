@@ -122,6 +122,19 @@ export default function CreateEvent() {
         )
     }
 
+    function CategorySelect() {
+        return (
+            <select className="select select-bordered select-primary w-full max-w-xs" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option disabled selected >Category</option>
+                <option value="Culture">Culture</option>
+                <option value="Community">Community</option>
+                <option value="Dance">Dance</option>
+                <option value="Sports">Sports</option>
+                <option value="Wildcard">Wildcard</option>
+            </select>
+        )
+    }
+
 
     function eventInput() {
         return (
@@ -130,7 +143,7 @@ export default function CreateEvent() {
                 <p class="pt-2 pb-4 text-center">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
                     <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
-                    <input type="text" placeholder="Category" class="input input-bordered input-primary w-full max-w-xs" value={category} onChange={e => setCategory(e.target.value)} />
+                    <CategorySelect/>
                     <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
                     <h1 class="text-xl font-medium">Start Date and Time</h1>
                     <div class="flex flex-row space-x-2">
@@ -140,7 +153,7 @@ export default function CreateEvent() {
                     <div class="flex flex-row space-x-2">
                         <input type="datetime-local" class="input input-bordered input-primary w-full" value={end} onChange={(e) => setEnd(e.target.value)} />
                     </div>
-                    { error ? <div class="text-sm self-center text-red-400">{error}</div> : null }
+                    {error ? <div class="text-sm self-center text-red-400">{error}</div> : null}
                     <div class="flex justify-center py-3 space-x-3">
                         <button
                             class="btn btn-primary"
@@ -153,8 +166,8 @@ export default function CreateEvent() {
             </div>
         )
     }
-    
-    
+
+
     return (
         <main className="flex min-h-screen flex-col items-center justify-center p-24">
             {loading ? <div class="loading loading-lg"></div> : null}
