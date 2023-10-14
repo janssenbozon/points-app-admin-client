@@ -9,7 +9,7 @@ export default function CreateEvent() {
 
     const router = useRouter();
     const [eventName, setEventName] = useState("");
-    const [category, setCategory] = useState("");
+    const [category, setCategory] = useState("Select a Category");
     const [points, setPoints] = useState(null);
     const [start, setStart] = useState(new Date());
     const [end, setEnd] = useState(new Date());
@@ -45,7 +45,7 @@ export default function CreateEvent() {
     function handleClick() {
 
         // check if all fields are filled out
-        if (eventName == "" || category == "" || points == null || start == null || end == null) {
+        if (eventName == "" || category == "Select a Category" || points == null || start == null || end == null) {
             setError("Please fill out all fields.");
             return;
         }
@@ -63,6 +63,7 @@ export default function CreateEvent() {
                 points: points,
                 start: start,
                 code: eventCode,
+                attendees: "",
             }).then(() => {
                 console.log("handleClick()");
                 setLoading(false);
@@ -87,11 +88,6 @@ export default function CreateEvent() {
                     <div class="pt-4 pb-4">
                         The event code is: <div class="text-2xl font-bold">{eventCode}</div>Please save this code for future reference.
                     </div>
-                </div>
-                <div class="flex justify-center py-3">
-                    <button
-                        class="btn btn-primary"
-                        onClick={() => router.push('/createEvent')}>Create Another Event</button>
                 </div>
                 <div class="flex justify-center py-3">
                     <button
@@ -125,7 +121,7 @@ export default function CreateEvent() {
     function CategorySelect() {
         return (
             <select className="select select-bordered select-primary w-full max-w-xs" value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option disabled selected >Category</option>
+                <option value="Select a Category" selected="true" disabled="disabled">Select a Category</option>
                 <option value="Culture">Culture</option>
                 <option value="Community">Community</option>
                 <option value="Dance">Dance</option>
