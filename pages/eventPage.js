@@ -87,9 +87,6 @@ export default function EventPage() {
                                         <td>{event.points}</td>
                                         <td>{dateString}</td>
                                         <td>{event.code}</td>
-                                        <button onClick={() => openModal(event)}>
-                                            <TrashIcon className="h-4 w-4 mx-2 my-3" />
-                                        </button>
                                         <button onClick={() => {
                                             router.push({
                                                 pathname: '/editEvent',

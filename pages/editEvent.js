@@ -136,14 +136,80 @@ export default function EditEvent() {
         )
     }
 
+    const DeleteModal = () => {
+        return (
+            <dialog id="my_modal_2" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Delete Event</h3>
+                    <p className="py-4">Are you sure you want to delete {eventName}? This will not delete the event for people who have already claimed the point.</p>
+                    <div className="modal-action">
+                        <form method="dialog">
+                            {/* if there is a button in form, it will close the modal */}
+                            <div className="flex space-x-3">
+                                <button className="btn" onClick={closeDelete}>No, take me back!</button>
+                                <button className="btn btn-primary" onClick={handleDelete}>Delete Event</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        )
+    }
+
+    const ConfirmModal = () => {
+        return (
+            <dialog id="my_modal_3" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Delete Event</h3>
+                    <p className="py-4">You have deleted {eventName}.</p>
+                    <div className="modal-action">
+                        <form method="dialog">
+                            {/* if there is a button in form, it will close the modal */}
+                            <div className="flex space-x-3">
+                                <button className="btn btn-primary" onClick={() => router.push("/eventPage")}>Return to events page</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        )
+    }
+
+    const ErrorModal = () => {
+        return (
+            <dialog id="my_modal_4" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Error deleting event</h3>
+                    <p className="py-4">There was an error deleting {eventName}.</p>
+                    <div className="modal-action">
+                        <form method="dialog">
+                            {/* if there is a button in form, it will close the modal */}
+                            <div className="flex space-x-3">
+                                <button className="btn btn-primary" onClick={() => document.getElementById('my_modal_4').close()}>Ok</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        )
+    }
+
     const openModal = (event) => {
-        console.log("Model pressed");
         document.getElementById('my_modal_1').showModal();
     }
 
     const closeModel = () => {
         document.getElementById('my_modal_1').close();
     }
+
+    const openDelete = (event) => {
+        document.getElementById('my_modal_2').showModal();
+    }
+
+    const closeDelete = () => {
+        document.getElementById('my_modal_2').close();
+    }
+
 
     function CategorySelect() {
         return (
@@ -162,6 +228,9 @@ export default function EditEvent() {
         return (
             <div class="flex flex-col items-center w-full">
                 <PopUp />
+                <DeleteModal/>
+                <ConfirmModal/>
+                <ErrorModal/>
                 <h1 class="text-5xl font-bold">Edit an Event</h1>
                 <p class="pt-2 pb-4">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
@@ -176,8 +245,8 @@ export default function EditEvent() {
                     {success ? <div class="text-sm self-center text-primary">Your changes have been saved.</div> : null}
                     <div class="flex justify-center py-3 space-x-3">
                         <button
-                            class="btn btn-primary"
-                            onClick={() => router.push('/eventPage')}>Back</button>
+                            class="btn bg-red-400"
+                            onClick={() => openDelete()}>Delete event</button>
                         <button
                             class="btn btn-primary"
                             onClick={() => openModal()}>Save</button>
@@ -185,6 +254,26 @@ export default function EditEvent() {
                 </div>
             </div>
         )
+    }
+
+    const handleDelete = () => {
+        console.log("handleDelete()");
+        console.log(eventCode);
+        const eventRef = ref(database, 'events/' + eventCode);
+        get(eventRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    console.log(snapshot.val());
+                    set(ref(database, 'events/' + eventCode), null);
+                    document.getElementById('my_modal_3').showModal();
+                } else {
+                    console.log("No data available");
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                document.getElementById('my_modal_4').showModal();
+            });
     }
 
     function attendeesList() {
