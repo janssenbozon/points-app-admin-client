@@ -39,25 +39,25 @@ export default function EventPage() {
 
     const handleDelete = () => {
         if (eventToDelete) {
-          const { code } = eventToDelete;
-          console.log("handleDelete()");
-          console.log(code);
-          const eventRef = ref(database, 'events/' + code);
-          get(eventRef)
-            .then((snapshot) => {
-              if (snapshot.exists()) {
-                console.log(snapshot.val());
-                set(ref(database, 'events/' + code), null);
-                router.reload();
-              } else {
-                console.log("No data available");
-              }
-            })
-            .catch((error) => {
-              console.error(error);
-            });
+            const { code } = eventToDelete;
+            console.log("handleDelete()");
+            console.log(code);
+            const eventRef = ref(database, 'events/' + code);
+            get(eventRef)
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        console.log(snapshot.val());
+                        set(ref(database, 'events/' + code), null);
+                        router.reload();
+                    } else {
+                        console.log("No data available");
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         }
-      }
+    }
 
     const EventsList = () => {
         return (
@@ -76,12 +76,16 @@ export default function EventPage() {
                         </thead>
                         <tbody>
                             {events.map((event) => {
+
+                                const date = new Date(event.start);
+                                const dateString = date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' });
+
                                 return (
                                     <tr key={event.code}>
                                         <td>{event.name}</td>
                                         <td>{event.category}</td>
                                         <td>{event.points}</td>
-                                        <td>{event.start.slice(2, 10)}</td>
+                                        <td>{dateString}</td>
                                         <td>{event.code}</td>
                                         <button onClick={() => openModal(event)}>
                                             <TrashIcon className="h-4 w-4 mx-2 my-3" />
@@ -92,7 +96,7 @@ export default function EventPage() {
                                                 query: {
                                                     eventCode: event.code,
                                                 }
-                                          }, '/editEvent');
+                                            }, '/editEvent');
                                         }}>
                                             <PencilSquareIcon className="h-4 w-4 mx-2 my-3" />
                                         </button>
@@ -141,7 +145,7 @@ export default function EventPage() {
     return (
         <main>
             <div class="flex min-h-screen flex-col items-center justify-center space-y-3">
-                {loading ? <span class="loading loading-spinner loading-lg"/> : <EventsList />}
+                {loading ? <span class="loading loading-spinner loading-lg" /> : <EventsList />}
                 <PopUp />
                 <div class="flex justify-center space-x-3">
                     <button

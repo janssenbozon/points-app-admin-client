@@ -6,6 +6,17 @@ import { resolve } from 'styled-jsx/css';
 import { auth } from '../firebase/config';
 import Link from 'next/link';
 
+const Tab = ({ label, activeTab, onClick }) => {
+    return (
+        <a
+            className={`tab ${activeTab === label ? 'tab-active' : ''}`}
+            onClick={() => onClick(label)}
+        >
+            {label}
+        </a>
+    );
+};
+
 export default function EditEvent() {
 
     const router = useRouter();
@@ -19,6 +30,9 @@ export default function EditEvent() {
     const [eventCode, setEventCode] = useState(0);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [attendees, setAttendees] = useState([]);
+    const [activeTab, setActiveTab] = useState("Event Details");
+
 
     useEffect(() => {
         console.log(router.query.eventCode);
@@ -32,11 +46,41 @@ export default function EditEvent() {
             setStart(event.start);
             setEnd(event.end);
             setEventCode(router.query.eventCode);
+            setAttendees([]);
+
+            if (event.attendees != null) {
+                // Create an array of promises for fetching user data
+                const promises = Object.keys(event.attendees).map((uid) => {
+                    const userRef = ref(database, 'users/' + uid);
+                    return get(userRef).then((snapshot) => {
+                        const user = snapshot.val();
+                        const trimmedUser = {
+                            name: user.firstName + " " + user.lastName,
+                            year: user.year,
+                            bigFam: user.bigFam,
+                            phoneNumber: user.phoneNumber,
+                        };
+                        return trimmedUser;
+                    }).catch((error) => {
+                        setError(error.code);
+                    });
+                });
+
+                // Use Promise.all to wait for all user data fetches to complete
+                Promise.all(promises).then((userArray) => {
+                    // Update the attendees state with the user data
+                    setAttendees(userArray);
+                });
+            }
         }).catch((error) => {
             setError(error.code);
         })
 
     }, [router.query])
+
+    const handleTabClick = (tabLabel) => {
+        setActiveTab(tabLabel);
+    };
 
     function handleClick() {
 
@@ -116,10 +160,10 @@ export default function EditEvent() {
 
     function eventInput() {
         return (
-            <div class="justify-center">
-                <PopUp/>
+            <div class="flex flex-col items-center w-full">
+                <PopUp />
                 <h1 class="text-5xl font-bold">Edit an Event</h1>
-                <p class="pt-2 pb-4 text-center">All fields are required.</p>
+                <p class="pt-2 pb-4">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
                     <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
                     <CategorySelect/>
@@ -128,8 +172,8 @@ export default function EditEvent() {
                     <input type="datetime-local" class="input input-bordered input-primary" value={start} onChange={(e) => setStart(e.target.value)} />
                     <h1 class="text-xl font-medium">End Date and Time</h1>
                     <input type="datetime-local" class="input input-bordered input-primary" value={end} onChange={(e) => setEnd(e.target.value)} />
-                    { error ? <div class="text-sm self-center text-red-400">{error}</div> : null }
-                    { success ? <div class="text-sm self-center text-primary">Your changes have been saved.</div> : null }
+                    {error ? <div class="text-sm self-center text-red-400">{error}</div> : null}
+                    {success ? <div class="text-sm self-center text-primary">Your changes have been saved.</div> : null}
                     <div class="flex justify-center py-3 space-x-3">
                         <button
                             class="btn btn-primary"
@@ -142,12 +186,60 @@ export default function EditEvent() {
             </div>
         )
     }
-    
-    
+
+    function attendeesList() {
+        return (
+            <>
+                <div class='text-5xl font-bold text-center'>Attendees</div>
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Year</th>
+                                <th>Big Fam</th>
+                                <th>Phone Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {attendees.map((user) => {
+                                return (
+                                    <tr key={user.uid}>
+                                        <td>{user.name}</td>
+                                        <td>{user.year}</td>
+                                        <td>{user.bigFam}</td>
+                                        <td>{user.phoneNumber}</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </>
+        )
+    }
+
+
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-24">
+        <main className="flex min-h-screen flex-col items-start justify-start p-12">
+            <button class="btn btn-primary" onClick={() => router.push("/eventPage")}>Back to home</button>
             {loading ? <div class="loading loading-lg"></div> : null}
-            {eventCard ? eventInput() : null}
+            <div className='flex flex-col w-full items-center justify-center'>
+                <div className="tabs tabs-boxed m-4">
+                    <Tab
+                        label="Event Details"
+                        activeTab={activeTab}
+                        onClick={handleTabClick}
+                    />
+                    <Tab
+                        label="Attendees"
+                        activeTab={activeTab}
+                        onClick={handleTabClick}
+                    />
+                </div>
+                {activeTab == "Event Details" ? eventInput() : null}
+                {activeTab == "Attendees" ? attendeesList() : null}
+            </div>
         </main>
     )
 }
