@@ -26,18 +26,17 @@ export default function Dashboard() {
                     console.log(snapshot.val());
                     var list = Object.values(snapshot.val());
                     list.forEach((user) => {
+                        // get phone number and name and push to phone and names database respectively
+                        console.log("Now updating" + user);
+                        const { uid, phoneNumber, firstName, lastName } = user;
+                        
+                        // push phone number to phones database
+                        set(ref(database, 'phones/' + phoneNumber), uid);
 
-                        console.log("Updating user " + user.firstName + " " + user.lastName + " (" + user.uid + ")");
-
-                        console.log("Past events: " + user.pastEvents);
-                    
-                        Object.values(user.pastEvents).forEach((event) => {
-                            console.log("Updating event " + event.name + " (" + event.id + ")");
-                            set(ref(database, 'events/' + event.code + '/attendees/' + user.uid), {
-                                uid: user.uid,
-                                name: user.firstName + " " + user.lastName
-                            });
-                        });
+                        // push name to names database
+                        const name = firstName + " " + lastName;
+                        const nameLower = name.toLowerCase();
+                        set(ref(database, 'names/' + nameLower + '/' + uid), uid);
                     });
 
                     console.log("Update complete.");

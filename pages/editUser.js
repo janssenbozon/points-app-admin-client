@@ -1,124 +1,126 @@
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { get, ref, set } from "firebase/database";
+import { useRouter } from 'next/router'
+import { useAuth } from '../hooks/useAuth'
 import { database } from '../firebase/config';
+import { get, ref, set } from 'firebase/database';
 
-export default function EditEvent() {
+export default function Homepage() {
 
+    const auth = useAuth();
+    const [user, setUser] = useState(null);
     const router = useRouter();
-    const [user, setUser] = useState("");
-    const [events, setEvents] = useState("");
-    const [error, setError] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [cultureEvents, setCultureEvents] = useState([]);
+    const [sportsEvents, setSportsEvents] = useState([]);
+    const [danceEvents, setDanceEvents] = useState([]);
+    const [communityEvents, setCommunityEvents] = useState([]);
+    const [wildcardEvents, setWildcardEvents] = useState([]);
 
     useEffect(() => {
-        console.log(router.query.uid);
-        const userRef = ref(database, 'users/' + router.query.uid);
-        get(userRef).then((snapshot) => {
-            const user = snapshot.val();
-            console.log(user);
-            setUser(user)
-            // pull event data
 
-        }).catch((error) => {
-            setError(error.code);
-        })
+        // fetch user data using query parameters from database
+        const uid = router.query.uid;
 
-    }, [router.query])
-
-    function handleClick() {
-
-        // check if all fields are filled out
-        if (eventName == "" || category == "" || points == null || start == null || end == null) {
-            setError("Please fill out all fields.");
-            return;
+        if (uid) {
+            get(ref(database, 'users/' + uid)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    console.log(snapshot.val());
+                    const user = snapshot.val();
+                    const pastEvents = Object.values(user.pastEvents);
+                    console.log(pastEvents);
+                    setUser(user);
+                    setCultureEvents(pastEvents.filter((event) => event.category == "Culture"));
+                    setSportsEvents(pastEvents.filter((event) => event.category == "Sports"));
+                    setDanceEvents(pastEvents.filter((event) => event.category == "Dance"));
+                    setCommunityEvents(pastEvents.filter((event) => event.category == "Community"));
+                    setWildcardEvents(pastEvents.filter((event) => event.category == "Wildcard"));
+                    console.log("User found!");
+                    console.log(user);
+                } else {
+                    console.log("User does not exist.");
+                }
+            }
+            ).catch((error) => {
+                console.error(error);
+            });
         }
 
-        return new Promise(async (resolve, reject) => {
-            setLoading(true);
-            setError(false);
+    }, []);
 
-            set(ref(database, 'events/' + eventCode), {
-                category: category,
-                end: end,
-                name: eventName,
-                points: points,
-                start: start,
-                code: eventCode,
-            }).then(() => {
-                console.log("handleClick()");
-                setLoading(false);
-                closeModel();
-                setSuccess(true);
-                resolve(true);
-            }).catch((error) => {
-                setLoading(false);
-                setError("Error creating event. Please try again. Error code: " + error.code);
-                setEventCard(false);
-                reject(error);
-            });
-        });
+    if (auth.loading || !user) {
+        return (
+            <span className="loading loading-spinner loading-lg" />
+        )
     }
 
-    const PopUp = () => {
+    const EventTable = (props) => {
+
         return (
-            <dialog id="my_modal_1" className="modal">
-                <div className="modal-box">
-                    <h3 className="font-bold text-lg">Are you sure?</h3>
-                    <p className="py-4">Are you sure you want to make these changes? Changes will not reflect on users who already checked in.</p>
-                    <div className="modal-action">
-                        <form method="dialog">
-                            {/* if there is a button in form, it will close the modal */}
-                            <div className="flex flex-row justify-center space-x-3">
-                                <button className="btn" onClick={closeModel}>No, take me back!</button>
-                                <button className="btn btn-primary" onClick={handleClick}>Yes, save these changes.</button>
-                            </div>
-                        </form>
+            <div className="card w-full bg-base-300 shadow-xl px-4 py-4">
+                <h1 className='text-2xl font-bold font-lato'>{props.title}</h1>
+                {props.events.length == 0 ? <p className='text-sm font-lato'>No events yet</p> :
+                    <table className='table mx-auto'>
+                        <thead>
+                            <tr>
+                                <th className='px-4 py-2'>Event</th>
+                                <th className='px-4 py-2'>Date</th>
+                                <th className='px-4 py-2'>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {props.events.map((event) => {
+
+                                const date = new Date(event.start);
+                                const dateString = date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' });
+
+                                return (
+                                    <tr key={event.name}>
+                                        <td className=''>{event.name}</td>
+                                        <td className=''>{dateString}</td>
+                                        <td className=''>{event.points}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                }
+            </div>
+        );
+    };
+
+    const ProgressBar = (props) => {
+        return (
+            <>
+                <h1 className='text-lg font-bold font-lato pb-1'>{props.category} Points</h1>
+                <div className='flex flex-row content-center'>
+                    <div className='basis-5/6'>
+                        <progress className="progress progress-info w-full h-4" value={props.points} max={props.max}></progress>
+                    </div>
+                    <div className='basis-1/6'>
+                        <p className='text-center align-middle font-bold'>{props.points}/{props.max}</p>
                     </div>
                 </div>
-            </dialog>
+            </>
         )
     }
 
-    const openModal = (event) => {
-        console.log("Model pressed");
-        document.getElementById('my_modal_1').showModal();
-    }
+    return (
+        <main className="flex min-h-screen flex-col items-start justify-start p-12">
 
-    const closeModel = () => {
-        document.getElementById('my_modal_1').close();
-    }
+            <button class="btn btn-primary" onClick={() => router.push("/searchUser")}>Back to home</button>
 
-    function CategorySelect() {
-        return (
-            <select className="select select-bordered select-primary w-full max-w-xs" value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option disabled selected >Category</option>
-                <option value="Culture">Culture</option>
-                <option value="Community">Community</option>
-                <option value="Dance">Dance</option>
-                <option value="Sports">Sports</option>
-                <option value="Wildcard">Wildcard</option>
-            </select>
-        )
-    }
-
-    function Header() {
-        return (
-            <div className='container'>
-                <p className='text-xl font-bold font-lato'>{user.firstName}</p>
-                {user.eventName == "NOT CHECKED IN" ? <p className='text-xl font-bold font-lato'>Not checked in</p> : <p className='text-xl font-bold font-lato'>Checked into: {user.eventName}</p>}
+            <div className='flex flex-col items-center w-full'>
+                <p className='text-5xl font-bold font-lato'>{user.firstName + " " + user.lastName}</p>
+                <p className='text-md font-bold font-lato text-base-600 pt-2'>{user.year + " | " + user.bigFam + " | " + user.phoneNumber}</p>
+                {user.eventName != "NOT CHECKED IN" ? <p className='text-md font-bold font-lato text-primary'>Currently checked in to {user.eventName}</p> : <p className='text-md font-bold font-lato text-primary'>Not checked in to any event</p>}
             </div>
-        )
-    }
 
-    function PointsSummary() {
-        return (
+
             <div className="container mx-auto pt-2">
                 <h1 className=' w-full text-3xl font-bold font-lato pt-2 pb-2 text-start'>Point Summary</h1>
                 <div className="card w-full bg-base-300 shadow-xl px-4 py-4">
                     <div className="px-4 py-3">
                         <h1 className='text-2xl font-bold font-lato pb-2'>Goodphil 2024</h1>
-                        <progress className="progress progress-info w-full h-6" value={user.points.total} max="9"/>
+                        <progress className="progress progress-info w-full h-6" value={user.points.culture + user.points.sports + user.points.dance + user.points.community + user.points.wildcard} max="9"></progress>
                         <ProgressBar
                             category="Culture"
                             points={user.points.culture}
@@ -146,53 +148,20 @@ export default function EditEvent() {
                         />
                     </div>
                 </div>
+                <div className="divider"/>
             </div>
-        )
-    }
 
-    const EventsList = () => {
-        return (
-            <main class='flex flex-col space-y-3'>
-                <div class='text-5xl font-bold text-center'>Events List</div>
-                <div class="overflow-x-auto">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Points</th>
-                                <th>Start</th>
-                                <th>Code</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {events.map((event) => {
-                                return (
-                                    <tr key={event.code}>
-                                        <td>{event.name}</td>
-                                        <td>{event.category}</td>
-                                        <td>{event.points}</td>
-                                        <td>{event.start.slice(2, 10)}</td>
-                                        <td>{event.code}</td>
-                                        <button onClick={() => openModal(event)}>
-                                            <TrashIcon className="h-4 w-4 mx-2 my-3" />
-                                        </button>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+            <div className="container mx-auto">
+                <h1 className=' w-full text-3xl font-bold font-lato pt-2 pb-2 text-start'>Event Log</h1>
+                <div className="pt-3 pb-3 space-y-5">
+                    <EventTable title="Sports" events={sportsEvents} />
+                    <EventTable title="Culture" events={cultureEvents} />
+                    <EventTable title="Community" events={communityEvents} />
+                    <EventTable title="Dance" events={danceEvents} />
+                    <EventTable title="Wildcard" events={wildcardEvents} />
                 </div>
-            </main>
-        )
-    }
+            </div>
 
-
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-24">
-            {loading ? <div class="loading loading-lg"></div> : null}
-            {error ? <div className="alert alert-error">{error}</div> : null}
-            {success ? <div className="alert alert-success">Your changes have been saved.</div> : null}
         </main>
     )
 }

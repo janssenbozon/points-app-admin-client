@@ -106,11 +106,11 @@ export default function SearchUser() {
                                             <td>{user.phoneNumber}</td>
                                             <button onClick={() => {
                                                 router.push({
-                                                    pathname: '/editEvent',
+                                                    pathname: '/editUser',
                                                     query: {
                                                         uid: user.uid,
                                                     }
-                                                }, '/editEvent');
+                                                }, '/editUser');
                                             }}>
                                                 <PencilSquareIcon className="h-4 w-4 mx-2 my-3" />
                                             </button>
