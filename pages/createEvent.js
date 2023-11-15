@@ -15,7 +15,8 @@ export default function CreateEvent() {
     const [end, setEnd] = useState(new Date());
     const [loading, setLoading] = useState(false);
     const [eventCard, setEventCard] = useState(true);
-    const [eventCode, setEventCode] = useState(0);
+    const [eventStartCode, setEventStartCode] = useState(0);
+    const [eventEndCode, setEventEndCode] = useState(0);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -54,15 +55,18 @@ export default function CreateEvent() {
             setLoading(true);
             setError(false);
 
-            const eventCode = await generateEventCode();
-            setEventCode(eventCode);
-            set(ref(database, 'events/' + eventCode), {
+            const eventStartCode = await generateEventCode();
+            const eventEndCode = await generateEventCode();
+            setEventStartCode(eventStartCode);
+            setEventEndCode(eventEndCode);
+            set(ref(database, 'events/' + eventStartCode), {
                 category: category,
                 end: end,
                 name: eventName,
                 points: points,
                 start: start,
-                code: eventCode,
+                startCode: eventStartCode,
+                endCode: eventEndCode,
                 attendees: "",
             }).then(() => {
                 console.log("handleClick()");
@@ -86,7 +90,7 @@ export default function CreateEvent() {
                 <div class="flex flex-col text-center">
                     <h2 class="text-5xl font-bold">Event created!</h2>
                     <div class="pt-4 pb-4">
-                        The event code is: <div class="text-2xl font-bold">{eventCode}</div>Please save this code for future reference.
+                        The start/end code is: <div class="text-2xl font-bold">{eventStartCode} / {eventEndCode}</div>Please save this code for future reference.
                     </div>
                 </div>
                 <div class="flex justify-center py-3">

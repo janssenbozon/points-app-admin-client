@@ -25,7 +25,7 @@ export default function SearchUser() {
             console.log("input is string");
 
             // pull uid(s) from names database
-            get(ref(database, 'names/' + input)).then((snapshot) => {
+            get(ref(database, 'names/' + input.toLowerCase())).then((snapshot) => {
                 if (snapshot.exists()) {
                     console.log("User found!");
                     console.log(snapshot.val());
@@ -106,11 +106,11 @@ export default function SearchUser() {
                                             <td>{user.phoneNumber}</td>
                                             <button onClick={() => {
                                                 router.push({
-                                                    pathname: '/editUser',
+                                                    pathname: '/editUser/[uid]',
                                                     query: {
                                                         uid: user.uid,
                                                     }
-                                                }, '/editUser');
+                                                });
                                             }}>
                                                 <PencilSquareIcon className="h-4 w-4 mx-2 my-3" />
                                             </button>

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { get, ref, set } from "firebase/database";
+import { get, ref, set, update } from "firebase/database";
 import { database } from '../firebase/config';
 import { resolve } from 'styled-jsx/css';
 import { auth } from '../firebase/config';
@@ -28,6 +28,7 @@ export default function EditEvent() {
     const [loading, setLoading] = useState(false);
     const [eventCard, setEventCard] = useState(true);
     const [eventCode, setEventCode] = useState(0);
+    const [eventOutCode, setEventOutCode] = useState(0);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
     const [attendees, setAttendees] = useState([]);
@@ -45,7 +46,8 @@ export default function EditEvent() {
             setPoints(event.points);
             setStart(event.start);
             setEnd(event.end);
-            setEventCode(router.query.eventCode);
+            setEventCode(event.startCode);
+            setEventOutCode(event.endCode);
             setAttendees([]);
 
             if (event.attendees != null) {
@@ -94,13 +96,14 @@ export default function EditEvent() {
             setLoading(true);
             setError(false);
 
-            set(ref(database, 'events/' + eventCode), {
+            update(ref(database, 'events/' + eventCode), {
                 category: category,
                 end: end,
                 name: eventName,
                 points: points,
                 start: start,
-                code: eventCode,
+                startCode: eventCode,
+                endCode: eventOutCode,
             }).then(() => {
                 console.log("handleClick()");
                 setLoading(false);
@@ -231,7 +234,6 @@ export default function EditEvent() {
                 <DeleteModal/>
                 <ConfirmModal/>
                 <ErrorModal/>
-                <h1 class="text-5xl font-bold">Edit an Event</h1>
                 <p class="pt-2 pb-4">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
                     <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
@@ -314,6 +316,8 @@ export default function EditEvent() {
             <button class="btn btn-primary" onClick={() => router.push("/eventPage")}>Back to home</button>
             {loading ? <div class="loading loading-lg"></div> : null}
             <div className='flex flex-col w-full items-center justify-center'>
+                <div className="text-5xl font-bold text-center">{eventName}</div>
+                <div className="text-2xl font-bold text-center">In: {eventCode} / Out: {eventOutCode}</div>
                 <div className="tabs tabs-boxed m-4">
                     <Tab
                         label="Event Details"

@@ -81,17 +81,17 @@ export default function EventPage() {
                                 const dateString = date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' });
 
                                 return (
-                                    <tr key={event.code}>
+                                    <tr key={event.startCode}>
                                         <td>{event.name}</td>
                                         <td>{event.category}</td>
                                         <td>{event.points}</td>
                                         <td>{dateString}</td>
-                                        <td>{event.code}</td>
+                                        <td>{event.startCode}</td>
                                         <button onClick={() => {
                                             router.push({
                                                 pathname: '/editEvent',
                                                 query: {
-                                                    eventCode: event.code,
+                                                    eventCode: event.startCode,
                                                 }
                                             }, '/editEvent');
                                         }}>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'
-import { useAuth } from '../hooks/useAuth'
-import { database } from '../firebase/config';
+import { useAuth } from '../../hooks/useAuth'
+import { database } from '../../firebase/config';
 import { get, ref, set } from 'firebase/database';
 
 export default function Homepage() {

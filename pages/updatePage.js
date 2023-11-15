@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/router';
-import { get, set, ref } from 'firebase/database';
+import { get, set, ref, update } from 'firebase/database';
 import { database } from '../firebase/config';
 
 export default function Dashboard() {
@@ -20,45 +20,35 @@ export default function Dashboard() {
         // pull entire user database
         console.log("Starting update...");
 
-        get(ref(database, 'users'))
-            .then((snapshot) => {
-                if (snapshot.exists()) {
-                    console.log(snapshot.val());
-                    var list = Object.values(snapshot.val());
-                    list.forEach((user) => {
-                        // get phone number and name and push to phone and names database respectively
-                        console.log("Now updating" + user);
-                        const { uid, phoneNumber, firstName, lastName } = user;
-                        
-                        // push phone number to phones database
-                        set(ref(database, 'phones/' + phoneNumber), uid);
+        // for each event: 
+        // change the name of the variable code to startCode
+        // add endCode variable and generate random 6 digit code
 
-                        // push name to names database
-                        const name = firstName + " " + lastName;
-                        const nameLower = name.toLowerCase();
-                        set(ref(database, 'names/' + nameLower + '/' + uid), uid);
-                    });
+        get(ref(database, 'events/')).then((snapshot) => {
+            if (snapshot.exists()) {
 
-                    console.log("Update complete.");
-                } else {
-                    console.log("No data available");
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+                // try on one event
+                const events = snapshot.val();
 
-        // for each user:
-            // pull their events
-            // add to event attendees list for each event
+                // for each event
+                Object.values(events).forEach((event) => {
+                    console.log(event);
+                    const startCode = event.code;
+                    const endCode = Math.floor(100000 + Math.random() * 900000);
+                    const updates = {};
+                    updates['/events/' + startCode + '/code'] = startCode;
+                    updates['/events/' + startCode + '/startCode'] = startCode;
+                    updates['/events/' + startCode + '/endCode'] = endCode;
+                    update(ref(database), updates);
+                });
 
-        // for each user:
-            // pull their phone number
-            // add it to the phones database -> parent is phone VALUE is uid
-
-            // pull their name
-            // convert to lowercase
-            // add it to names database -> parent is name CHILD is uid (for instances where two people share the same name)
+                console.log("Update complete!");
+            } else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
 
     }
 
