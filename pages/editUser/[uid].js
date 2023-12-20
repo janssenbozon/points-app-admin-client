@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useAuth } from '../../hooks/useAuth'
 import { database } from '../../firebase/config';
 import { get, ref, set } from 'firebase/database';
+import AddEventModal from './AddEventModal';
 
 export default function Homepage() {
 
@@ -108,6 +109,8 @@ export default function Homepage() {
 
             <button class="btn btn-primary" onClick={() => router.push("/searchUser")}>Back to home</button>
 
+            <AddEventModal user={user}/>
+
             <div className='flex flex-col items-center w-full'>
                 <p className='text-5xl font-bold font-lato'>{user.firstName + " " + user.lastName}</p>
                 <p className='text-md font-bold font-lato text-base-600 pt-2'>{user.year + " | " + user.bigFam + " | " + user.phoneNumber}</p>
@@ -152,13 +155,16 @@ export default function Homepage() {
             </div>
 
             <div className="container mx-auto">
-                <h1 className=' w-full text-3xl font-bold font-lato pt-2 pb-2 text-start'>Event Log</h1>
+                <h1 className='w-full text-3xl font-bold font-lato pt-2 pb-2 text-start'>Event Log</h1>
                 <div className="pt-3 pb-3 space-y-5">
                     <EventTable title="Sports" events={sportsEvents} />
                     <EventTable title="Culture" events={cultureEvents} />
                     <EventTable title="Community" events={communityEvents} />
                     <EventTable title="Dance" events={danceEvents} />
                     <EventTable title="Wildcard" events={wildcardEvents} />
+                    <div class="flex justify-center"> 
+                        <button class="btn btn-primary self-center" onClick={() => document.getElementById('addEventModal').showModal()}>Add Event</button>
+                    </div>
                 </div>
             </div>
 
