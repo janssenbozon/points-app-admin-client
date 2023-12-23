@@ -21,6 +21,9 @@ export default function Dashboard() {
     function handleEvents() {
         router.push('/eventPage');
     }
+    function handleBatchEdit() {
+        router.push('/batchEdit');
+    }
 
     function handleExport() {
         router.push('/export');
@@ -50,6 +53,10 @@ export default function Dashboard() {
                         class="btn btn-neutral"
                         onClick={() => handleSearch()}
                     >Search for a user</button>
+                    <button
+                        class="btn btn-neutral"
+                        onClick={() => handleBatchEdit()}
+                    >Batch edit users</button>
                     <button
                         class="btn btn-error"
                         onClick={() => handleSignout()}

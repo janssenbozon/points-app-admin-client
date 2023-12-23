@@ -11,7 +11,7 @@ const AddEventModal = (props) => {
     const [errorCode, setErrorCode] = useState();
     const [eventCode, setEventCode] = useState("");
     const uid = props.user.uid;
-    const pastEventsKeys = Object.keys(props.user.pastEvents);
+    const pastEventsKeys = props.user.pastEvents ? Object.keys(props.user.pastEvents) : [];
     const [event, setEvent] = useState(null);
 
     const closeModal = () => {
@@ -69,7 +69,7 @@ const AddEventModal = (props) => {
         const points = user.points[category] + event.points;
         console.log("Points = " + points);
 
-        updates['/users/' + uid + '/points/' + event.category] = points;
+        updates['/users/' + uid + '/points/' + category] = points;
         updates['/users/' + uid + '/pastEvents/' + eventCode] = {
             name: event.name,
             start: event.start,
@@ -143,7 +143,7 @@ const AddEventModal = (props) => {
                     <form method="dialog">
                         {/* if there is a button in form, it will close the modal */}
                         <div className="flex flex-row justify-center space-x-3">
-                            <button className="btn" onClick={() => closeModal()}>Close</button>
+                            <button className="btn" onClick={() => props.router.reload()}>Close</button>
                         </div>
                     </form>
                 </div>

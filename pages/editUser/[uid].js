@@ -4,6 +4,8 @@ import { useAuth } from '../../hooks/useAuth'
 import { database } from '../../firebase/config';
 import { get, ref, set } from 'firebase/database';
 import AddEventModal from './AddEventModal';
+import { TrashIcon } from "@heroicons/react/20/solid";
+import DeleteEventModal from './DeleteEventModal';
 
 export default function Homepage() {
 
@@ -15,25 +17,46 @@ export default function Homepage() {
     const [danceEvents, setDanceEvents] = useState([]);
     const [communityEvents, setCommunityEvents] = useState([]);
     const [wildcardEvents, setWildcardEvents] = useState([]);
+    const [eventToDelete, setEventToDelete] = useState({
+        name: "",
+        start: "",
+        points: "",
+        category: "",
+        code: ""
+    }); // Store the event data to delete
 
     useEffect(() => {
 
         // fetch user data using query parameters from database
         const uid = router.query.uid;
+        console.log(uid);
 
         if (uid) {
             get(ref(database, 'users/' + uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     console.log(snapshot.val());
+
                     const user = snapshot.val();
-                    const pastEvents = Object.values(user.pastEvents);
-                    console.log(pastEvents);
+
+                    if(user.pastEvents) {
+                        const pastEvents = Object.values(user.pastEvents).map((event) => {
+                            return {
+                                ...event,
+                                code: Object.keys(user.pastEvents).find((key) => user.pastEvents[key] === event)
+                            }
+                        });
+                        console.log(pastEvents)
+    
+                        setCultureEvents(pastEvents.filter((event) => event.category == "Culture"));
+                        setSportsEvents(pastEvents.filter((event) => event.category == "Sports"));
+                        setDanceEvents(pastEvents.filter((event) => event.category == "Dance"));
+                        setCommunityEvents(pastEvents.filter((event) => event.category == "Community"));
+                        setWildcardEvents(pastEvents.filter((event) => event.category == "Wildcard"));
+                    }
+                    
+                    // take past eevnts and add the key as a property
+                    
                     setUser(user);
-                    setCultureEvents(pastEvents.filter((event) => event.category == "Culture"));
-                    setSportsEvents(pastEvents.filter((event) => event.category == "Sports"));
-                    setDanceEvents(pastEvents.filter((event) => event.category == "Dance"));
-                    setCommunityEvents(pastEvents.filter((event) => event.category == "Community"));
-                    setWildcardEvents(pastEvents.filter((event) => event.category == "Wildcard"));
                     console.log("User found!");
                     console.log(user);
                 } else {
@@ -49,7 +72,9 @@ export default function Homepage() {
 
     if (auth.loading || !user) {
         return (
-            <span className="loading loading-spinner loading-lg" />
+            <main className="flex min-h-screen flex-col items-center justify-center p-12">
+                <span className="loading loading-spinner loading-lg" />
+            </main>
         )
     }
 
@@ -78,6 +103,9 @@ export default function Homepage() {
                                         <td className=''>{event.name}</td>
                                         <td className=''>{dateString}</td>
                                         <td className=''>{event.points}</td>
+                                        <button onClick={() => { setEventToDelete(event); document.getElementById('deleteEventModal').showModal(); }}>
+                                            <TrashIcon className="h-4 w-4 mx-2 my-3" />
+                                        </button>
                                     </tr>
                                 );
                             })}
@@ -109,7 +137,8 @@ export default function Homepage() {
 
             <button class="btn btn-primary" onClick={() => router.push("/searchUser")}>Back to home</button>
 
-            <AddEventModal user={user}/>
+            <AddEventModal user={user} router={router}/>
+            <DeleteEventModal user={user} event={eventToDelete} router={router}/>
 
             <div className='flex flex-col items-center w-full'>
                 <p className='text-5xl font-bold font-lato'>{user.firstName + " " + user.lastName}</p>
@@ -171,3 +200,9 @@ export default function Homepage() {
         </main>
     )
 }
+
+export async function getServerSideProps(context) {
+    return {
+      props: {}, // will be passed to the page component as props
+    };
+  }
