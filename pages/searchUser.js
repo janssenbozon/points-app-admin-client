@@ -82,6 +82,19 @@ export default function SearchUser() {
     }
 
     const Results = () => {
+
+        if (results.length == 0) {
+            return (
+                <main class='flex flex-col space-y-3 w-full justify-center'>
+                    <div class='text-5xl font-bold text-center'>No results found.</div>
+                    <button class="btn btn-primary w-1/6 self-center" onClick={() => {
+                        setShowResults(false);
+                        setShowSearch(true);
+                    }}>Search again</button>
+                </main>
+            )
+        }
+
         return (
             <>
                 <main class='flex flex-col space-y-3 w-full justify-center'>
@@ -130,7 +143,7 @@ export default function SearchUser() {
         return (
             <div class="flex flex-col w-full h-full justify-center items-center">
                 <h1 class="text-5xl font-bold">Search For a User</h1>
-                <p class="py-3">Look up a user by name or phone number.</p>
+                <p class="py-3">Look up a user by entering a first and last name or a phone number.</p>
                 <div class="flex flex-col space-y-3">
                     <input type="text" placeholder="Enter name or number" className="input input-bordered w-full max-w-xs" value={input} onChange={e => setInput(e.target.value)} />
                     <button
@@ -148,8 +161,8 @@ export default function SearchUser() {
 
         <main className="flex min-h-screen flex-col items-start justify-start p-12">
             <button class="btn btn-primary" onClick={() => router.push("/dashboard")}>Back to home</button>
-            { showSearch ? <Search /> : null}
-            { showResults ? <Results /> : null}
+            {showSearch ? <Search /> : null}
+            {showResults ? <Results /> : null}
         </main>
     )
 
