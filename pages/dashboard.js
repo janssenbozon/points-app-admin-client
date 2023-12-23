@@ -51,6 +51,10 @@ export default function Dashboard() {
                         onClick={() => handleSearch()}
                     >Search for a user</button>
                     <button
+                        class="btn btn-neutral"
+                        onClick={() => handleExport()}
+                    >Export data</button>
+                    <button
                         class="btn btn-error"
                         onClick={() => handleSignout()}
                     >Log out</button>
