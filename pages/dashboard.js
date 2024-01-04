@@ -1,6 +1,9 @@
 import Head from 'next/head'
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/router';
+import { get, ref } from 'firebase/database';
+import { database } from '../firebase/config';
+import { convertToCsv } from '../functions/formatData';
 
 export default function Dashboard() {
 
@@ -26,7 +29,19 @@ export default function Dashboard() {
     }
 
     function handleExport() {
-        router.push('/export');
+        get(ref(database, "/")).then((snapshot) => {
+            console.log("data fetched!")
+            let data = snapshot.val();
+            console.log("data as json: ", data);
+            let dataAsCsv = convertToCsv(data);
+            let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(dataAsCsv));
+            element.setAttribute('download', 'goodphil_data.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        });
     }
 
     // TODO: Break down into components
@@ -57,6 +72,10 @@ export default function Dashboard() {
                         class="btn btn-neutral"
                         onClick={() => handleBatchEdit()}
                     >Batch edit users</button>
+                    <button
+                        class="btn btn-neutral"
+                        onClick={() => handleExport()}
+                    >Export User Data</button>
                     <button
                         class="btn btn-error"
                         onClick={() => handleSignout()}
