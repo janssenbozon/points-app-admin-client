@@ -1,9 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { get, ref, set } from "firebase/database";
-import { database } from '../firebase/config';
-import { resolve } from 'styled-jsx/css';
-import { auth } from '../firebase/config';
+import { createNewEventInFirebase } from '@/functions/eventFunctions';
 
 export default function CreateEvent() {
 
@@ -20,70 +17,48 @@ export default function CreateEvent() {
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    // generate random 6 digit code and check if it exists in database
-    function generateEventCode() {
-        console.log("generateEventCode()")
-        return new Promise((resolve, reject) => {
-            const code = Math.floor(100000 + Math.random() * 900000);
-            const eventRef = ref(database, 'events/' + code);
-            get(eventRef)
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        // Code already exists, try generating a new one
-                        return generateEventCode();
-                    } else {
-                        console.log("Code: " + code);
-                        resolve(code); // Resolve the promise with the generated code
-                    }
-                })
-                .catch((error) => {
-                    reject(error);
-                    setError("Error creating event. Please try again.");
-                });
-        });
-    }
-
+    /**
+     * Handles the click event for creating a new event.
+     */
     function handleClick() {
+
+        setLoading(true);
+        setError(false);
 
         // check if all fields are filled out
         if (eventName == "" || category == "Select a Category" || points == null || start == null || end == null) {
             setError("Please fill out all fields.");
+            setLoading(false);
             return;
         }
 
-        return new Promise(async (resolve, reject) => {
-            setLoading(true);
-            setError(false);
+        // create event object based on input
+        const eventToCreate = {
+            category: category,
+            end: end,
+            name: eventName,
+            points: points,
+            start: start,
+        }
 
-            const eventStartCode = await generateEventCode();
-            const eventEndCode = await generateEventCode();
-            setEventStartCode(eventStartCode);
-            setEventEndCode(eventEndCode);
-            set(ref(database, 'events/' + eventStartCode), {
-                category: category,
-                end: end,
-                name: eventName,
-                points: points,
-                start: start,
-                startCode: eventStartCode,
-                endCode: eventEndCode,
-                attendees: "",
-            }).then(() => {
-                console.log("handleClick()");
-                setLoading(false);
-                setSuccess(true);
-                setEventCard(false);
-                resolve(true);
-            }).catch((error) => {
-                setLoading(false);
-                setError("Error creating event. Please try again.");
-                setEventCard(false);
-                reject(error);
-            });
+        // create event in firebase
+        createNewEventInFirebase(eventToCreate).then((codes) => {
+            setEventStartCode(codes.startCode);
+            setEventEndCode(codes.endCode);
+            setLoading(false);
+            setSuccess(true);
+            setEventCard(false);
+        }).catch((error) => {
+            setLoading(false);
+            setError("Error creating event. Please try again.");
+            setEventCard(false);
         });
     }
-
-    // return success card (daisyui compoenent) with button to return to homepage or create a new event 
+    
+    /**
+     * Renders a success card component with event creation details.
+     * @returns {JSX.Element} The success card component.
+     */
     function successCard() {
         return (
             <div>
@@ -96,27 +71,7 @@ export default function CreateEvent() {
                 <div class="flex justify-center py-3">
                     <button
                         class="btn btn-primary"
-                        onClick={() => router.push('/')}>Return to Homepage</button>
-                </div>
-            </div>
-        )
-    }
-
-    function errorCard() {
-        return (
-            <div class="card shadow bg-red">
-                <div class="card-body">
-                    Error creating event.
-                </div>
-                <div class="flex justify-center py-3">
-                    <button
-                        class="btn btn-primary"
-                        onClick={() => router.push('/createEvent')}>Create Another Event</button>
-                </div>
-                <div class="flex justify-center py-3">
-                    <button
-                        class="btn btn-primary"
-                        onClick={() => router.push('/dashboard')}>Return to Homepage</button>
+                        onClick={() => router.push('/eventPage')}>Return to Events</button>
                 </div>
             </div>
         )
@@ -143,7 +98,7 @@ export default function CreateEvent() {
                 <p class="pt-2 pb-4 text-center">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
                     <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
-                    <CategorySelect/>
+                    <CategorySelect />
                     <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
                     <h1 class="text-xl font-medium">Start Date and Time</h1>
                     <div class="flex flex-row space-x-2">

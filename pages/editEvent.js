@@ -1,10 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { get, ref, set, update } from "firebase/database";
-import { database } from '../firebase/config';
-import { resolve } from 'styled-jsx/css';
-import { auth } from '../firebase/config';
-import Link from 'next/link';
+import { deleteEventFromFirebase, getEventFromFirebase, updateEventInFirebase } from '@/functions/eventFunctions';
 
 const Tab = ({ label, activeTab, onClick }) => {
     return (
@@ -36,11 +32,8 @@ export default function EditEvent() {
 
 
     useEffect(() => {
-        console.log(router.query.eventCode);
-        const eventRef = ref(database, 'events/' + router.query.eventCode);
-        get(eventRef).then((snapshot) => {
-            const event = snapshot.val();
-            console.log(event);
+
+        getEventFromFirebase(router.query.eventCode).then((event) => {
             setEventName(event.name);
             setCategory(event.category);
             setPoints(event.points);
@@ -48,35 +41,10 @@ export default function EditEvent() {
             setEnd(event.end);
             setEventCode(event.startCode);
             setEventOutCode(event.endCode);
-            setAttendees([]);
-
-            if (event.attendees != null) {
-                // Create an array of promises for fetching user data
-                const promises = Object.keys(event.attendees).map((uid) => {
-                    const userRef = ref(database, 'users/' + uid);
-                    return get(userRef).then((snapshot) => {
-                        const user = snapshot.val();
-                        const trimmedUser = {
-                            name: user.firstName + " " + user.lastName,
-                            year: user.year,
-                            bigFam: user.bigFam,
-                            phoneNumber: user.phoneNumber,
-                        };
-                        return trimmedUser;
-                    }).catch((error) => {
-                        setError(error.code);
-                    });
-                });
-
-                // Use Promise.all to wait for all user data fetches to complete
-                Promise.all(promises).then((userArray) => {
-                    // Update the attendees state with the user data
-                    setAttendees(userArray);
-                });
-            }
+            setAttendees(event.attendees);
         }).catch((error) => {
             setError(error.code);
-        })
+        });
 
     }, [router.query])
 
@@ -92,30 +60,26 @@ export default function EditEvent() {
             return;
         }
 
-        return new Promise(async (resolve, reject) => {
-            setLoading(true);
-            setError(false);
+        setLoading(true);
+        setError(false);
 
-            update(ref(database, 'events/' + eventCode), {
-                category: category,
-                end: end,
-                name: eventName,
-                points: points,
-                start: start,
-                startCode: eventCode,
-                endCode: eventOutCode,
-            }).then(() => {
-                console.log("handleClick()");
-                setLoading(false);
-                closeModel();
-                setSuccess(true);
-                resolve(true);
-            }).catch((error) => {
-                setLoading(false);
-                setError("Error creating event. Please try again. Error code: " + error.code);
-                setEventCard(false);
-                reject(error);
-            });
+        const newEventData = {
+            name: eventName,
+            category: category,
+            points: points,
+            start: start,
+            end: end,
+        }
+
+        return updateEventInFirebase(eventCode, newEventData).then(() => {
+            console.log("handleClick()");
+            setLoading(false);
+            closeModel();
+            setSuccess(true);
+        }).catch((error) => {
+            setLoading(false);
+            setError("Error creating event. Please try again. Error code: " + error.code);
+            setEventCard(false);
         });
     }
 
@@ -231,13 +195,13 @@ export default function EditEvent() {
         return (
             <div class="flex flex-col items-center w-full">
                 <PopUp />
-                <DeleteModal/>
-                <ConfirmModal/>
-                <ErrorModal/>
+                <DeleteModal />
+                <ConfirmModal />
+                <ErrorModal />
                 <p class="pt-2 pb-4">All fields are required.</p>
                 <div class="flex flex-col space-y-2 w-80">
                     <input type="text" placeholder="Name" class="input input-bordered input-primary w-full max-w-xs" value={eventName} onChange={e => setEventName(e.target.value)} />
-                    <CategorySelect/>
+                    <CategorySelect />
                     <input type="number" placeholder="Points" class="input input-bordered input-primary w-full max-w-xs" value={points} onChange={e => setPoints(parseInt(e.target.value))} />
                     <h1 class="text-xl font-medium">Start Date and Time</h1>
                     <input type="datetime-local" class="input input-bordered input-primary" value={start} onChange={(e) => setStart(e.target.value)} />
@@ -261,21 +225,14 @@ export default function EditEvent() {
     const handleDelete = () => {
         console.log("handleDelete()");
         console.log(eventCode);
-        const eventRef = ref(database, 'events/' + eventCode);
-        get(eventRef)
-            .then((snapshot) => {
-                if (snapshot.exists()) {
-                    console.log(snapshot.val());
-                    set(ref(database, 'events/' + eventCode), null);
-                    document.getElementById('my_modal_3').showModal();
-                } else {
-                    console.log("No data available");
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                document.getElementById('my_modal_4').showModal();
-            });
+
+        deleteEventFromFirebase(eventCode).then(() => {
+            document.getElementById('my_modal_2').close();
+            document.getElementById('my_modal_3').showModal();
+        }).catch((error) => {
+            console.error(error);
+            document.getElementById('my_modal_4').showModal();
+        });
     }
 
     function attendeesList() {

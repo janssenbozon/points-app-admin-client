@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { get, ref } from 'firebase/database';
 import { database } from '../firebase/config';
 import { convertToCsv } from '../functions/formatData';
+import { getEntireDatabase } from '../functions/generalFunctions';
+
 
 export default function Dashboard() {
 
@@ -29,9 +31,7 @@ export default function Dashboard() {
     }
 
     function handleExport() {
-        get(ref(database, "/")).then((snapshot) => {
-            console.log("data fetched!")
-            let data = snapshot.val();
+        getEntireDatabase().then((data) => {
             console.log("data as json: ", data);
             let dataAsCsv = convertToCsv(data);
             let element = document.createElement('a');
